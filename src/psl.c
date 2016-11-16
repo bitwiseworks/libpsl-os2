@@ -78,6 +78,9 @@
 #include <limits.h> /* for UINT_MAX */
 #include <langinfo.h>
 #include <arpa/inet.h>
+#ifdef __OS2__
+#include <sys/socket.h>
+#endif
 #ifdef HAVE_ALLOCA_H
 #	include <alloca.h>
 #endif
@@ -1496,9 +1499,15 @@ int psl_check_version_number(int version)
 static int _isip(const char *hostname)
 {
 	struct in_addr addr;
+#ifndef __OS2__
 	struct in6_addr addr6;
+#endif
 
+#ifdef __OS2__
+	return inet_pton(AF_INET, hostname, &addr);
+#else
 	return inet_pton(AF_INET, hostname, &addr) || inet_pton(AF_INET6, hostname, &addr6);
+#endif
 }
 
 /**
