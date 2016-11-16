@@ -1099,7 +1099,11 @@ psl_ctx_t *psl_load_file(const char *fname)
 	if (!fname)
 		return NULL;
 
+#ifdef __OS2__
+	if ((fp = fopen(fname, "rb"))) {
+#else
 	if ((fp = fopen(fname, "r"))) {
+#endif
 		psl = psl_load_fp(fp);
 		fclose(fp);
 	}

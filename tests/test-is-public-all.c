@@ -152,7 +152,11 @@ static void test_psl(void)
 		failed++;
 	}
 
+#ifdef __OS2__
+	if ((fp = fopen(PSL_FILE, "rb"))) {
+#else
 	if ((fp = fopen(PSL_FILE, "r"))) {
+#endif
 #ifdef HAVE_CLOCK_GETTIME
 		clock_gettime(CLOCK_REALTIME, &ts1);
 #endif
