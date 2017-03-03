@@ -94,7 +94,7 @@ static void test_psl_entry(const psl_ctx_t *psl, const char *domain, int type)
 		} else ok++;
 
 		if (!(strchr(domain, '.'))) {
-			/* TLDs are always expected to be Publix Suffixes */
+			/* TLDs are always expected to be Public Suffixes */
 			if (!(result = psl_is_public_suffix2(psl, domain, PSL_TYPE_PRIVATE))) {
 				failed++;
 				printf("psl_is_public_suffix2(%s, PSL_TYPE_PRIVATE)=%d (expected 1)\n", domain, result);
@@ -131,7 +131,7 @@ static void test_psl_entry(const psl_ctx_t *psl, const char *domain, int type)
 static void test_psl(void)
 {
 	FILE *fp;
-	psl_ctx_t *psl, *psl3, *psl4;
+	psl_ctx_t *psl, *psl3, *psl4, *psl5;
 	const psl_ctx_t *psl2;
 	int type = 0;
 	char buf[256], *linep, *p;
@@ -151,6 +151,8 @@ static void test_psl(void)
 		fprintf(stderr, "Failed to load 'psl_ascii.dafsa'\n");
 		failed++;
 	}
+
+	psl5 = psl_latest("psl.dafsa");
 
 #ifdef __OS2__
 	if ((fp = fopen(PSL_FILE, "rb"))) {
@@ -194,6 +196,9 @@ static void test_psl(void)
 
 			if (psl4)
 				test_psl_entry(psl4, p, type);
+
+			if (psl5)
+				test_psl_entry(psl5, p, type);
 		}
 
 #ifdef HAVE_CLOCK_GETTIME
@@ -205,6 +210,7 @@ static void test_psl(void)
 		failed++;
 	}
 
+	psl_free(psl5);
 	psl_free(psl4);
 	psl_free(psl3);
 	psl_free((psl_ctx_t *)psl2);

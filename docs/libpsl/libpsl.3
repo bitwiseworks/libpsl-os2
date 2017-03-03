@@ -2,12 +2,12 @@
 .\"     Title: libpsl
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 11/14/2016
+.\"      Date: 01/16/2017
 .\"    Manual: LIBPSL Library
 .\"    Source: LIBPSL Library
 .\"  Language: English
 .\"
-.TH "LIBPSL" "3" "11/14/2016" "LIBPSL Library" "LIBPSL Library"
+.TH "LIBPSL" "3" "01/16/2017" "LIBPSL Library" "LIBPSL Library"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -52,6 +52,8 @@ l l
 l l
 l l
 l l
+l l
+l l
 l l.
 T{
 psl_ctx_t\ \&*
@@ -62,6 +64,11 @@ T{
 psl_ctx_t\ \&*
 T}:T{
 psl_load_fp\ \&()
+T}
+T{
+psl_ctx_t\ \&*
+T}:T{
+psl_latest\ \&()
 T}
 T{
 const psl_ctx_t\ \&*
@@ -132,6 +139,11 @@ T{
 int
 T}:T{
 psl_is_cookie_domain_acceptable\ \&()
+T}
+T{
+const char\ \&*
+T}:T{
+psl_dist_filename\ \&()
 T}
 T{
 const char\ \&*
@@ -249,7 +261,7 @@ This function loads the public suffixes file named
 \&. To free the allocated resources, call
 \fBpsl_free()\fR\&.
 .PP
-The suffixes are expected to be UTF\-8 encoded (lowercase + NFCK) if they are international\&.
+The suffixes are expected to be UTF\-8 encoded (lowercase + NFKC) if they are international\&.
 .sp
 .it 1 an-trap
 .nr an-no-space-flag 1
@@ -305,7 +317,7 @@ psl_load_fp (\fI\fBFILE\fR\fR\fI *fp\fR);
 This function loads the public suffixes from a FILE pointer\&. To free the allocated resources, call
 \fBpsl_free()\fR\&.
 .PP
-The suffixes are expected to be UTF\-8 encoded (lowercase + NFCK) if they are international\&.
+The suffixes are expected to be UTF\-8 encoded (lowercase + NFKC) if they are international\&.
 .sp
 .it 1 an-trap
 .nr an-no-space-flag 1
@@ -345,6 +357,112 @@ on failure\&.
 .PP
 Since:
 0\&.1
+.SS "psl_latest\ \&()"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+psl_ctx_t\ \&*
+psl_latest (\fIconst \fR\fI\fBchar\fR\fR\fI *fname\fR);
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+This function loads the the latest available PSL data from either
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fIfname\fR
+(application specific filename, may be
+NULL)
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+location specified during built\-time (filename from \&./configure \-\-with\-psl\-distfile)
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+built\-in PSL data (generated from \&./configure \-\-with\-psl\-file)
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+location of built\-in data (filename from \&./configure \-\-with\-psl\-file)
+.RE
+.PP
+If none of the above is available, the function returns
+NULL\&.
+.PP
+To free the allocated resources, call
+\fBpsl_free()\fR\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBParameters\fR
+.RS 4
+.TS
+expand tab(:);
+l l l.
+T{
+.PP
+fname
+T}:T{
+.PP
+Name of PSL file or
+NULL
+T}:T{
+\ \&
+T}
+.TE
+.sp 1
+.RE
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBReturns\fR
+.RS 4
+.PP
+Pointer to a PSL context or
+NULL
+on failure\&.
+.RE
+.PP
+Since:
+0\&.16
 .SS "psl_builtin\ \&()"
 .sp
 .if n \{\
@@ -364,7 +482,7 @@ The builtin data also contains punycode entries, one for each international doma
 .PP
 If the generation of built\-in data has been disabled during compilation,
 NULL
-will be returned\&. When using the builtin psl context, you can provide UTF\-8 (lowercase + NFCK) or ASCII/ACE (punycode) representations of domains to functions like
+will be returned\&. When using the builtin psl context, you can provide UTF\-8 (lowercase + NFKC) or ASCII/ACE (punycode) representations of domains to functions like
 \fBpsl_is_public_suffix()\fR\&.
 .sp
 .it 1 an-trap
@@ -447,7 +565,7 @@ For cookie domain checking see
 .PP
 International
 \fIdomain\fR
-names have to be either in UTF\-8 (lowercase + NFCK) or in ASCII/ACE format (punycode)\&. Other encodings likely result in incorrect return values\&. Use helper function
+names have to be either in UTF\-8 (lowercase + NFKC) or in ASCII/ACE format (punycode)\&. Other encodings likely result in incorrect return values\&. Use helper function
 \fBpsl_str_to_utf8lower()\fR
 for normalization
 \fIdomain\fR
@@ -535,7 +653,7 @@ PSL_TYPE_ANY\&.
 .PP
 International
 \fIdomain\fR
-names have to be either in UTF\-8 (lowercase + NFCK) or in ASCII/ACE format (punycode)\&. Other encodings likely result in incorrect return values\&. Use helper function
+names have to be either in UTF\-8 (lowercase + NFKC) or in ASCII/ACE format (punycode)\&. Other encodings likely result in incorrect return values\&. Use helper function
 \fBpsl_str_to_utf8lower()\fR
 for normalization
 \fIdomain\fR
@@ -625,7 +743,7 @@ by the means of the
 .PP
 International
 \fIdomain\fR
-names have to be either in UTF\-8 (lowercase + NFCK) or in ASCII/ACE format (punycode)\&. Other encodings likely result in incorrect return values\&. Use helper function
+names have to be either in UTF\-8 (lowercase + NFKC) or in ASCII/ACE format (punycode)\&. Other encodings likely result in incorrect return values\&. Use helper function
 \fBpsl_str_to_utf8lower()\fR
 for normalization
 \fIdomain\fR
@@ -714,7 +832,7 @@ by the means of the
 .PP
 International
 \fIdomain\fR
-names have to be either in UTF\-8 (lowercase + NFCK) or in ASCII/ACE format (punycode)\&. Other encodings likely result in incorrect return values\&. Use helper function
+names have to be either in UTF\-8 (lowercase + NFKC) or in ASCII/ACE format (punycode)\&. Other encodings likely result in incorrect return values\&. Use helper function
 \fBpsl_str_to_utf8lower()\fR
 for normalization
 \fIdomain\fR
@@ -954,7 +1072,7 @@ psl_builtin_file_time (\fI\fBvoid\fR\fR);
 .RE
 .\}
 .PP
-This function returns the mtime of the Publix Suffix List file that has been built in\&.
+This function returns the mtime of the Public Suffix List file that has been built in\&.
 .PP
 If the generation of built\-in data has been disabled during compilation, 0 will be returned\&.
 .sp
@@ -984,7 +1102,7 @@ psl_builtin_sha1sum (\fI\fBvoid\fR\fR);
 .RE
 .\}
 .PP
-This function returns the SHA1 checksum of the Publix Suffix List file that has been built in\&. The returned string is in lowercase hex encoding, e\&.g\&. "2af1e9e3044eda0678bb05949d7cca2f769901d8"\&.
+This function returns the SHA1 checksum of the Public Suffix List file that has been built in\&. The returned string is in lowercase hex encoding, e\&.g\&. "2af1e9e3044eda0678bb05949d7cca2f769901d8"\&.
 .PP
 If the generation of built\-in data has been disabled during compilation, an empty string will be returned\&.
 .sp
@@ -1014,7 +1132,7 @@ psl_builtin_filename (\fI\fBvoid\fR\fR);
 .RE
 .\}
 .PP
-This function returns the file name of the Publix Suffix List file that has been built in\&.
+This function returns the file name of the Public Suffix List file that has been built in\&.
 .PP
 If the generation of built\-in data has been disabled during compilation, an empty string will be returned\&.
 .sp
@@ -1086,7 +1204,7 @@ For international domain names both,
 \fIhostname\fR
 and
 \fIcookie_domain\fR
-, have to be either in UTF\-8 (lowercase + NFCK) or in ASCII/ACE (punycode) format\&. Other encodings or mixing UTF\-8 and punycode likely result in incorrect return values\&.
+, have to be either in UTF\-8 (lowercase + NFKC) or in ASCII/ACE (punycode) format\&. Other encodings or mixing UTF\-8 and punycode likely result in incorrect return values\&.
 .PP
 Use helper function
 \fBpsl_str_to_utf8lower()\fR
@@ -1176,6 +1294,37 @@ T}
 .PP
 Since:
 0\&.1
+.SS "psl_dist_filename\ \&()"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+const char\ \&*
+psl_dist_filename (\fI\fBvoid\fR\fR);
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+This function returns the file name of the distribution/system PSL data file\&. This file will be considered by
+\fBpsl_latest()\fR\&.
+.PP
+Return the filename that is set by \&./configure \-\-with\-psl\-distfile, or an empty string\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBReturns\fR
+.RS 4
+.PP
+String containing a PSL file name or an empty string\&.
+.RE
+.PP
+Since:
+0\&.16
 .SS "psl_get_version\ \&()"
 .sp
 .if n \{\
@@ -1271,7 +1420,7 @@ psl_str_to_utf8lower (\fIconst \fR\fI\fBchar\fR\fR\fI *str\fR,
 .RE
 .\}
 .PP
-This helper function converts a string to UTF\-8 lowercase + NFCK representation\&. Lowercase + NFCK UTF\-8 is needed as input to the domain checking functions\&.
+This helper function converts a string to UTF\-8 lowercase + NFKC representation\&. Lowercase + NFKC UTF\-8 is needed as input to the domain checking functions\&.
 .PP
 \fIlower\fR
 is set to
@@ -1367,7 +1516,7 @@ Since:
 .RS 4
 .\}
 .nf
-#define PSL_VERSION "0\&.15\&.0"
+#define PSL_VERSION "0\&.17\&.0"
 .fi
 .if n \{\
 .RE
@@ -1389,7 +1538,7 @@ Since:
 .RS 4
 .\}
 .nf
-#define PSL_VERSION_MINOR 15
+#define PSL_VERSION_MINOR 17
 .fi
 .if n \{\
 .RE
@@ -1400,7 +1549,7 @@ Since:
 .RS 4
 .\}
 .nf
-#define PSL_VERSION_NUMBER 0x000f00
+#define PSL_VERSION_NUMBER 0x001100
 .fi
 .if n \{\
 .RE
