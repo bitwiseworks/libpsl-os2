@@ -14,7 +14,6 @@
 
 @SET_MAKE@
 
-
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -92,7 +91,6 @@ host_triplet = @host@
 @WITH_LIBICU_TRUE@am__append_1 = $(LIBICU_LIBS)
 @WITH_LIBIDN2_TRUE@am__append_2 = -lidn2 -lunistring
 @WITH_LIBIDN_TRUE@am__append_3 = -lidn -lunistring
-noinst_PROGRAMS = psl2c$(EXEEXT)
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/gettext.m4 \
@@ -151,13 +149,6 @@ am__v_lt_1 =
 libpsl_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libpsl_la_LDFLAGS) $(LDFLAGS) -o $@
-PROGRAMS = $(noinst_PROGRAMS)
-am_psl2c_OBJECTS = psl2c-psl2c.$(OBJEXT) \
-	psl2c-lookup_string_in_fixed_set.$(OBJEXT)
-psl2c_OBJECTS = $(am_psl2c_OBJECTS)
-am__DEPENDENCIES_1 =
-@BUILTIN_GENERATOR_LIBICU_TRUE@psl2c_DEPENDENCIES =  \
-@BUILTIN_GENERATOR_LIBICU_TRUE@	$(am__DEPENDENCIES_1)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -192,8 +183,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libpsl_la_SOURCES) $(psl2c_SOURCES)
-DIST_SOURCES = $(libpsl_la_SOURCES) $(psl2c_SOURCES)
+SOURCES = $(libpsl_la_SOURCES)
+DIST_SOURCES = $(libpsl_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -315,6 +306,7 @@ PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POSUB = @POSUB@
+PSL_DISTFILE = @PSL_DISTFILE@
 PSL_FILE = @PSL_FILE@
 PSL_TESTFILE = @PSL_TESTFILE@
 PYTHON = @PYTHON@
@@ -399,15 +391,10 @@ BUILT_SOURCES = suffixes_dafsa.c
 CLEANFILES = suffixes_dafsa.c
 lib_LTLIBRARIES = libpsl.la
 libpsl_la_SOURCES = psl.c lookup_string_in_fixed_set.c
-libpsl_la_CPPFLAGS = -I$(top_srcdir)/include
+libpsl_la_CPPFLAGS = -I$(top_srcdir)/include -DPSL_DISTFILE=\"$(PSL_DISTFILE)\"
 # include ABI version information
 libpsl_la_LDFLAGS = -version-info $(LIBPSL_SO_VERSION) $(am__append_1) \
 	$(am__append_2) $(am__append_3)
-psl2c_SOURCES = psl2c.c lookup_string_in_fixed_set.c
-psl2c_CPPFLAGS = -I$(top_srcdir)/include -DMAKE_DAFSA=\"$(top_srcdir)/src/psl-make-dafsa\"
-@BUILTIN_GENERATOR_LIBICU_TRUE@psl2c_LDADD = $(LIBICU_LIBS)
-@BUILTIN_GENERATOR_LIBIDN2_TRUE@psl2c_LDADD = @LTLIBICONV@ -lidn2 -lunistring
-@BUILTIN_GENERATOR_LIBIDN_TRUE@psl2c_LDADD = @LTLIBICONV@ -lidn -lunistring
 EXTRA_DIST = psl-make-dafsa LICENSE.chromium
 dist_man_MANS = psl-make-dafsa.1
 all: $(BUILT_SOURCES)
@@ -483,19 +470,6 @@ clean-libLTLIBRARIES:
 libpsl.la: $(libpsl_la_OBJECTS) $(libpsl_la_DEPENDENCIES) $(EXTRA_libpsl_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libpsl_la_LINK) -rpath $(libdir) $(libpsl_la_OBJECTS) $(libpsl_la_LIBADD) $(LIBS)
 
-clean-noinstPROGRAMS:
-	@list='$(noinst_PROGRAMS)'; test -n "$$list" || exit 0; \
-	echo " rm -f" $$list; \
-	rm -f $$list || exit $$?; \
-	test -n "$(EXEEXT)" || exit 0; \
-	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
-	echo " rm -f" $$list; \
-	rm -f $$list
-
-psl2c$(EXEEXT): $(psl2c_OBJECTS) $(psl2c_DEPENDENCIES) $(EXTRA_psl2c_DEPENDENCIES) 
-	@rm -f psl2c$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(psl2c_OBJECTS) $(psl2c_LDADD) $(LIBS)
-
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -504,8 +478,6 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libpsl_la-lookup_string_in_fixed_set.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libpsl_la-psl.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/psl2c-lookup_string_in_fixed_set.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/psl2c-psl2c.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -541,34 +513,6 @@ libpsl_la-lookup_string_in_fixed_set.lo: lookup_string_in_fixed_set.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup_string_in_fixed_set.c' object='libpsl_la-lookup_string_in_fixed_set.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libpsl_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libpsl_la-lookup_string_in_fixed_set.lo `test -f 'lookup_string_in_fixed_set.c' || echo '$(srcdir)/'`lookup_string_in_fixed_set.c
-
-psl2c-psl2c.o: psl2c.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(psl2c_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT psl2c-psl2c.o -MD -MP -MF $(DEPDIR)/psl2c-psl2c.Tpo -c -o psl2c-psl2c.o `test -f 'psl2c.c' || echo '$(srcdir)/'`psl2c.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/psl2c-psl2c.Tpo $(DEPDIR)/psl2c-psl2c.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='psl2c.c' object='psl2c-psl2c.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(psl2c_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o psl2c-psl2c.o `test -f 'psl2c.c' || echo '$(srcdir)/'`psl2c.c
-
-psl2c-psl2c.obj: psl2c.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(psl2c_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT psl2c-psl2c.obj -MD -MP -MF $(DEPDIR)/psl2c-psl2c.Tpo -c -o psl2c-psl2c.obj `if test -f 'psl2c.c'; then $(CYGPATH_W) 'psl2c.c'; else $(CYGPATH_W) '$(srcdir)/psl2c.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/psl2c-psl2c.Tpo $(DEPDIR)/psl2c-psl2c.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='psl2c.c' object='psl2c-psl2c.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(psl2c_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o psl2c-psl2c.obj `if test -f 'psl2c.c'; then $(CYGPATH_W) 'psl2c.c'; else $(CYGPATH_W) '$(srcdir)/psl2c.c'; fi`
-
-psl2c-lookup_string_in_fixed_set.o: lookup_string_in_fixed_set.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(psl2c_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT psl2c-lookup_string_in_fixed_set.o -MD -MP -MF $(DEPDIR)/psl2c-lookup_string_in_fixed_set.Tpo -c -o psl2c-lookup_string_in_fixed_set.o `test -f 'lookup_string_in_fixed_set.c' || echo '$(srcdir)/'`lookup_string_in_fixed_set.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/psl2c-lookup_string_in_fixed_set.Tpo $(DEPDIR)/psl2c-lookup_string_in_fixed_set.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup_string_in_fixed_set.c' object='psl2c-lookup_string_in_fixed_set.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(psl2c_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o psl2c-lookup_string_in_fixed_set.o `test -f 'lookup_string_in_fixed_set.c' || echo '$(srcdir)/'`lookup_string_in_fixed_set.c
-
-psl2c-lookup_string_in_fixed_set.obj: lookup_string_in_fixed_set.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(psl2c_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT psl2c-lookup_string_in_fixed_set.obj -MD -MP -MF $(DEPDIR)/psl2c-lookup_string_in_fixed_set.Tpo -c -o psl2c-lookup_string_in_fixed_set.obj `if test -f 'lookup_string_in_fixed_set.c'; then $(CYGPATH_W) 'lookup_string_in_fixed_set.c'; else $(CYGPATH_W) '$(srcdir)/lookup_string_in_fixed_set.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/psl2c-lookup_string_in_fixed_set.Tpo $(DEPDIR)/psl2c-lookup_string_in_fixed_set.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup_string_in_fixed_set.c' object='psl2c-lookup_string_in_fixed_set.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(psl2c_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o psl2c-lookup_string_in_fixed_set.obj `if test -f 'lookup_string_in_fixed_set.c'; then $(CYGPATH_W) 'lookup_string_in_fixed_set.c'; else $(CYGPATH_W) '$(srcdir)/lookup_string_in_fixed_set.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -704,7 +648,7 @@ distdir: $(DISTFILES)
 check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(MANS)
+all-am: Makefile $(LTLIBRARIES) $(MANS)
 installdirs:
 	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(man1dir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -745,7 +689,7 @@ maintainer-clean-generic:
 clean: clean-am
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
-	clean-noinstPROGRAMS mostlyclean-am
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -818,14 +762,14 @@ uninstall-man: uninstall-man1
 .MAKE: all check install install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am check check-am clean clean-generic \
-	clean-libLTLIBRARIES clean-libtool clean-noinstPROGRAMS \
-	cscopelist-am ctags ctags-am distclean distclean-compile \
-	distclean-generic distclean-libtool distclean-tags distdir dvi \
-	dvi-am html html-am info info-am install install-am \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-libLTLIBRARIES \
-	install-man install-man1 install-pdf install-pdf-am install-ps \
+	clean-libLTLIBRARIES clean-libtool cscopelist-am ctags \
+	ctags-am distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-libLTLIBRARIES install-man \
+	install-man1 install-pdf install-pdf-am install-ps \
 	install-ps-am install-strip installcheck installcheck-am \
 	installdirs maintainer-clean maintainer-clean-generic \
 	mostlyclean mostlyclean-compile mostlyclean-generic \
@@ -838,8 +782,8 @@ uninstall-man: uninstall-man1
 
 # Build rule for suffix_dafsa.c
 # PSL_FILE can be set by ./configure --with-psl-file=[PATH]
-suffixes_dafsa.c: $(PSL_FILE) psl2c$(EXEEXT)
-	./psl2c$(EXEEXT) "$(PSL_FILE)" suffixes_dafsa.c
+suffixes_dafsa.c: $(PSL_FILE) $(srcdir)/psl-make-dafsa
+	$(srcdir)/psl-make-dafsa --output-format=cxx+ "$(PSL_FILE)" suffixes_dafsa.c
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

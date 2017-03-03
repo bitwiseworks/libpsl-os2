@@ -34,11 +34,11 @@
 #include <stdio.h>
 #include <time.h>
 
-#define PSL_VERSION "0.15.0"
+#define PSL_VERSION "0.17.0"
 #define PSL_VERSION_MAJOR 0
-#define PSL_VERSION_MINOR 15
+#define PSL_VERSION_MINOR 17
 #define PSL_VERSION_PATCH 0
-#define PSL_VERSION_NUMBER 0x000f00
+#define PSL_VERSION_NUMBER 0x001100
 
 #ifdef  __cplusplus
 extern "C" {
@@ -91,6 +91,10 @@ psl_ctx_t *
 const psl_ctx_t *
 	psl_builtin(void);
 
+/* retrieves most recent PSL data */
+psl_ctx_t *
+	psl_latest(const char *fname);
+
 /* checks whether domain is a public suffix or not */
 int
 	psl_is_public_suffix(const psl_ctx_t *psl, const char *domain);
@@ -138,6 +142,10 @@ const char *
 /* returns file name of PSL source file */
 const char *
 	psl_builtin_filename(void);
+
+/* returns name of distribution PSL data file */
+const char *
+	psl_dist_filename(void);
 
 /* returns library version string */
 const char *

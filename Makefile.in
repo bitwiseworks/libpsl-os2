@@ -199,8 +199,8 @@ CSCOPE = cscope
 DIST_SUBDIRS = $(SUBDIRS)
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(srcdir)/libpsl.pc.in ABOUT-NLS AUTHORS COPYING NEWS README \
-	ar-lib compile config.guess config.rpath config.sub depcomp \
-	install-sh ltmain.sh missing
+	ar-lib compile config.guess config.rpath config.sub install-sh \
+	ltmain.sh missing
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -334,6 +334,7 @@ PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POSUB = @POSUB@
+PSL_DISTFILE = @PSL_DISTFILE@
 PSL_FILE = @PSL_FILE@
 PSL_TESTFILE = @PSL_TESTFILE@
 PYTHON = @PYTHON@
@@ -948,7 +949,6 @@ check-coverage:
 	lcov --capture --initial --directory src --output-file libpsl.info
 	$(MAKE) check
 	lcov --capture --directory src --output-file libpsl.info
-	lcov --remove libpsl.info 'src/psl2c.c' -o libpsl.info
 	genhtml --prefix . libpsl.info --legend --title "libpsl" --output-directory=lcov
 
 check-coverage-libidn:
