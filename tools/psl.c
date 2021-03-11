@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2014-2016 Tim Ruehsen
+ * Copyright(c) 2014-2018 Tim Ruehsen
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -32,10 +32,14 @@
 # include <config.h>
 #endif
 
-#include <unistd.h>
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <locale.h>
 
 #include <libpsl.h>
 
@@ -47,6 +51,8 @@ static void usage(int err, FILE* f)
 	fprintf(f, "  --version                    show library version information\n");
 	fprintf(f, "  --use-latest-data            use the latest PSL data available [default]\n");
 	fprintf(f, "  --use-builtin-data           use the builtin PSL data\n");
+	fprintf(f, "  --no-star-rule               do not apply the prevailing star rule\n");
+	fprintf(f, "                                 (only applies to --is-public-suffix)\n");
 	fprintf(f, "  --load-psl-file <filename>   load PSL data from file\n");
 	fprintf(f, "  --is-public-suffix           check if domains are public suffixes [default]\n");
 	fprintf(f, "  --is-cookie-domain-acceptable <cookie-domain>\n");
@@ -54,6 +60,7 @@ static void usage(int err, FILE* f)
 	fprintf(f, "  --print-unreg-domain         print the longest public suffix part\n");
 	fprintf(f, "  --print-reg-domain           print the shortest private suffix part\n");
 	fprintf(f, "  --print-info                 print info about library builtin data\n");
+	fprintf(f, "  -b,  --batch                 don't print leading domain\n");
 	fprintf(f, "\n");
 
 	exit(err);
@@ -71,16 +78,15 @@ static const char *time2str(time_t t)
 
 int main(int argc, const char *const *argv)
 {
-	int mode = 1;
+	int mode = 1, no_star_rule = 0, batch_mode = 0;
 	const char *const *arg, *psl_file = NULL, *cookie_domain = NULL;
 	psl_ctx_t *psl = (psl_ctx_t *) psl_latest(NULL);
 
 	/* set current locale according to the environment variables */
-	#include <locale.h>
 	setlocale(LC_ALL, "");
 
 	for (arg = argv + 1; arg < argv + argc; arg++) {
-		if (!strncmp(*arg, "--", 2)) {
+		if (**arg == '-') {
 			if (!strcmp(*arg, "--is-public-suffix"))
 				mode = 1;
 			else if (!strcmp(*arg, "--print-unreg-domain"))
@@ -111,6 +117,9 @@ int main(int argc, const char *const *argv)
 				if (!(psl = (psl_ctx_t *) psl_builtin()))
 					printf("No builtin PSL data available\n");
 			}
+			else if (!strcmp(*arg, "--no-star-rule")) {
+				no_star_rule = 1;
+			}
 			else if (!strcmp(*arg, "--load-psl-file") && arg < argv + argc - 1) {
 				psl_free(psl);
 				if (psl_file) {
@@ -122,6 +131,9 @@ int main(int argc, const char *const *argv)
 					psl_file = NULL;
 				}
 			}
+			else if (!strcmp(*arg, "--batch") || !strcmp(*arg, "-b")) {
+				batch_mode = 1;
+			}
 			else if (!strcmp(*arg, "--help")) {
 				fprintf(stdout, "`psl' explores the Public Suffix List\n\n");
 				usage(0, stdout);
@@ -130,7 +142,7 @@ int main(int argc, const char *const *argv)
 				printf("psl %s (0x%06x)\n", PACKAGE_VERSION, psl_check_version_number(0));
 				printf("libpsl %s\n", psl_get_version());
 				printf("\n");
-				printf("Copyright (C) 2014-2016 Tim Ruehsen\n");
+				printf("Copyright (C) 2014-2018 Tim Ruehsen\n");
 				printf("License: MIT\n");
 				exit(0);
 			}
@@ -147,6 +159,10 @@ int main(int argc, const char *const *argv)
 	}
 
 	if (mode != 99) {
+		if (mode != 1 && no_star_rule) {
+			fprintf(stderr, "--no-star-rule only combines with --is-public-suffix\n");
+			usage(1, stderr);
+		}
 		if (!psl) {
 			fprintf(stderr, "No PSL data available - aborting\n");
 			exit(2);
@@ -163,26 +179,46 @@ int main(int argc, const char *const *argv)
 				for (len = strlen(domain); len && isspace(domain[len - 1]); len--); /* skip trailing spaces */
 				domain[len] = 0;
 
-				if ((rc = psl_str_to_utf8lower(domain, NULL, NULL, &lower)) != PSL_SUCCESS)
+				if ((rc = psl_str_to_utf8lower(domain, NULL, NULL, &lower)) != PSL_SUCCESS) {
 					fprintf(stderr, "%s: Failed to convert to lowercase UTF-8 (%d)\n", domain, rc);
-				else if (mode == 1)
-					printf("%s: %d (%s)\n", domain, psl_is_public_suffix(psl, lower), lower);
-				else if (mode == 2)
-					printf("%s: %s\n", domain, psl_unregistrable_domain(psl, lower));
-				else if (mode == 3)
-					printf("%s: %s\n", domain, psl_registrable_domain(psl, lower));
+					continue;
+				}
+
+				if (!batch_mode && mode != 4)
+					printf("%s: ", domain);
+
+				if (mode == 1) {
+					if (no_star_rule)
+						printf("%d", psl_is_public_suffix2(psl, lower, PSL_TYPE_ANY|PSL_TYPE_NO_STAR_RULE));
+					else
+						printf("%d", psl_is_public_suffix(psl, lower));
+
+					if (!batch_mode)
+						printf(" (%s)\n", lower);
+					else
+						putchar('\n');
+				}
+				else if (mode == 2) {
+					const char *dom = psl_unregistrable_domain(psl, lower);
+					printf("%s\n", dom ? dom : "(null)");
+				}
+				else if (mode == 3) {
+					const char *dom = psl_registrable_domain(psl, lower);
+					printf("%s\n", dom ? dom : "(null)");
+				}
 				else if (mode == 4) {
 					char *cookie_domain_lower;
 
 					if ((rc = psl_str_to_utf8lower(domain, NULL, NULL, &cookie_domain_lower)) == PSL_SUCCESS) {
-						printf("%s: %d\n", domain, psl_is_cookie_domain_acceptable(psl, lower, cookie_domain));
+						if (!batch_mode)
+							printf("%s: ", domain);
+						printf("%d\n", psl_is_cookie_domain_acceptable(psl, lower, cookie_domain));
 						free(cookie_domain_lower);
 					} else
 						fprintf(stderr, "%s: Failed to convert cookie domain '%s' to lowercase UTF-8 (%d)\n", domain, cookie_domain, rc);
 				}
 
-				if (rc == PSL_SUCCESS)
-					free(lower);
+				psl_free_string(lower);
 			}
 
 			psl_free(psl);
@@ -191,28 +227,59 @@ int main(int argc, const char *const *argv)
 	}
 
 	if (mode == 1) {
-		for (; arg < argv + argc; arg++)
-			printf("%s: %d\n", *arg, psl_is_public_suffix(psl, *arg));
+		for (; arg < argv + argc; arg++) {
+			if (!batch_mode)
+				printf("%s: ", *arg);
+			if (no_star_rule)
+				printf("%d\n", psl_is_public_suffix2(psl, *arg, PSL_TYPE_ANY|PSL_TYPE_NO_STAR_RULE));
+			else
+				printf("%d\n", psl_is_public_suffix(psl, *arg));
+		}
 	}
 	else if (mode == 2) {
-		for (; arg < argv + argc; arg++)
-			printf("%s: %s\n", *arg, psl_unregistrable_domain(psl, *arg));
+		for (; arg < argv + argc; arg++) {
+			const char *dom = psl_unregistrable_domain(psl, *arg);
+			if (!batch_mode)
+				printf("%s: ", *arg);
+			printf("%s\n", dom ? dom : "(null)");
+		}
 	}
 	else if (mode == 3) {
-		for (; arg < argv + argc; arg++)
-			printf("%s: %s\n", *arg, psl_registrable_domain(psl, *arg));
+		for (; arg < argv + argc; arg++) {
+			const char *dom = psl_registrable_domain(psl, *arg);
+			if (!batch_mode)
+				printf("%s: ", *arg);
+			printf("%s\n", dom ? dom : "(null)");
+		}
 	}
 	else if (mode == 4) {
-		for (; arg < argv + argc; arg++)
-			printf("%s: %d\n", *arg, psl_is_cookie_domain_acceptable(psl, *arg, cookie_domain));
+		for (; arg < argv + argc; arg++) {
+			if (!batch_mode)
+				printf("%s: ", *arg);
+			printf("%d\n", psl_is_cookie_domain_acceptable(psl, *arg, cookie_domain));
+		}
 	}
 	else if (mode == 99) {
 		printf("dist filename: %s\n", psl_dist_filename());
 
 		if (psl && psl != psl_builtin()) {
-			printf("suffixes: %d\n", psl_suffix_count(psl));
-			printf("exceptions: %d\n", psl_suffix_exception_count(psl));
-			printf("wildcards: %d\n", psl_suffix_wildcard_count(psl));
+			static char not_avail[] = "- information not available -";
+			int n;
+
+			if ((n = psl_suffix_count(psl)) >= 0)
+				printf("suffixes: %d\n", n);
+			else
+				printf("suffixes: %s\n", not_avail);
+
+			if ((n = psl_suffix_exception_count(psl)) >= 0)
+				printf("exceptions: %d\n", n);
+			else
+				printf("exceptions: %s\n", not_avail);
+
+			if ((n = psl_suffix_wildcard_count(psl)) >= 0)
+				printf("wildcards: %d\n", n);
+			else
+				printf("wildcards: %s\n", not_avail);
 		}
 
 		psl_free(psl);
@@ -223,7 +290,7 @@ int main(int argc, const char *const *argv)
 			printf("builtin exceptions: %d\n", psl_suffix_exception_count(psl));
 			printf("builtin wildcards: %d\n", psl_suffix_wildcard_count(psl));
 			printf("builtin filename: %s\n", psl_builtin_filename());
-			printf("builtin file time: %ld (%s)\n", psl_builtin_file_time(), time2str(psl_builtin_file_time()));
+			printf("builtin file time: %ld (%s)\n", (long) psl_builtin_file_time(), time2str(psl_builtin_file_time()));
 			printf("builtin SHA1 file hash: %s\n", psl_builtin_sha1sum());
 			printf("builtin outdated: %d\n", psl_builtin_outdated());
 		} else

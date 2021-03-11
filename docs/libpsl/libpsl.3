@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: libpsl
-.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 01/16/2017
+.\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/18/2020
 .\"    Manual: LIBPSL Library
 .\"    Source: LIBPSL Library
 .\"  Language: English
 .\"
-.TH "LIBPSL" "3" "01/16/2017" "LIBPSL Library" "LIBPSL Library"
+.TH "LIBPSL" "3" "07/18/2020" "LIBPSL Library" "LIBPSL Library"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,6 +34,7 @@ Stable, unless otherwise indicated
 .SH "FUNCTIONS"
 .TS
 expand tab(:);
+l l
 l l
 l l
 l l
@@ -160,6 +161,11 @@ psl_error_t
 T}:T{
 psl_str_to_utf8lower\ \&()
 T}
+T{
+void
+T}:T{
+psl_free_string\ \&()
+T}
 .TE
 .sp 1
 .SH "TYPES AND VALUES"
@@ -174,7 +180,14 @@ l l
 l l
 l l
 l l
+l l
+l l
 l l.
+T{
+#define
+T}:T{
+PSL_API
+T}
 T{
 #define
 T}:T{
@@ -209,6 +222,11 @@ T{
 #define
 T}:T{
 PSL_TYPE_PRIVATE
+T}
+T{
+#define
+T}:T{
+PSL_TYPE_NO_STAR_RULE
 T}
 T{
 #define
@@ -314,7 +332,9 @@ psl_load_fp (\fI\fBFILE\fR\fR\fI *fp\fR);
 .RE
 .\}
 .PP
-This function loads the public suffixes from a FILE pointer\&. To free the allocated resources, call
+This function loads the public suffixes from a
+FILE
+pointer\&. To free the allocated resources, call
 \fBpsl_free()\fR\&.
 .PP
 The suffixes are expected to be UTF\-8 encoded (lowercase + NFKC) if they are international\&.
@@ -334,7 +354,8 @@ T{
 fp
 T}:T{
 .PP
-FILE pointer
+FILE
+pointer
 T}:T{
 \ \&
 T}
@@ -476,7 +497,7 @@ psl_builtin (\fI\fBvoid\fR\fR);
 .RE
 .\}
 .PP
-This function returns the PSL context that has been generated and built in at compile\-time\&. You don\*(Aqt have to free the returned context explicitely\&.
+This function returns the PSL context that has been generated and built in at compile\-time\&. You don\*(Aqt have to free the returned context explicitly\&.
 .PP
 The builtin data also contains punycode entries, one for each international domain name\&.
 .PP
@@ -493,7 +514,9 @@ will be returned\&. When using the builtin psl context, you can provide UTF\-8 (
 \fBReturns\fR
 .RS 4
 .PP
-Pointer to the built in PSL data or NULL if this data is not available\&.
+Pointer to the built in PSL data or
+NULL
+if this data is not available\&.
 .RE
 .PP
 Since:
@@ -647,9 +670,14 @@ is a public suffix by the means of the
 \fItype\fR
 specifies the PSL section where to perform the lookup\&. Valid values are
 PSL_TYPE_PRIVATE,
-PSL_TYPE_ICANN
-and
+PSL_TYPE_ICANN,
+PSL_TYPE_NO_STAR_RULE, and
 PSL_TYPE_ANY\&.
+.PP
+PSL_TYPE_NO_STAR_RULE
+switches of the \*(Aqprevailing star rule\*(Aq (see
+\m[blue]\fBList\fR\m[]\&\s-2\u[3]\d\s+2
+under \*(AqAlgorithm\*(Aq 2\&.)\&. Applying the flag means that TLDs not explicitly listed in the PSL are *not* treated as public suffixes\&.
 .PP
 International
 \fIdomain\fR
@@ -916,6 +944,11 @@ psl_suffix_count (\fIconst \fR\fI\fBpsl_ctx_t\fR\fR\fI *psl\fR);
 This function returns number of public suffixes maintained by
 \fIpsl\fR
 \&. The number of exceptions within the Public Suffix List are not included\&.
+.PP
+If the information is not available, the return value is \-1 (since 0\&.19)\&. This is the case with DAFSA blobs or if
+\fIpsl\fR
+is
+NULL\&.
 .sp
 .it 1 an-trap
 .nr an-no-space-flag 1
@@ -948,7 +981,7 @@ T}
 \fBReturns\fR
 .RS 4
 .PP
-Number of public suffixes entries in PSL context\&.
+Number of public suffixes entries in PSL context or \-1 if this information is not available\&.
 .RE
 .PP
 Since:
@@ -969,6 +1002,11 @@ psl_suffix_exception_count (\fIconst \fR\fI\fBpsl_ctx_t\fR\fR\fI *psl\fR);
 This function returns number of public suffix exceptions maintained by
 \fIpsl\fR
 \&.
+.PP
+If the information is not available, the return value is \-1 (since 0\&.19)\&. This is the case with DAFSA blobs or if
+\fIpsl\fR
+is
+NULL\&.
 .sp
 .it 1 an-trap
 .nr an-no-space-flag 1
@@ -1001,7 +1039,7 @@ T}
 \fBReturns\fR
 .RS 4
 .PP
-Number of public suffix exceptions in PSL context\&.
+Number of public suffix exceptions in PSL context or \-1 if this information is not available\&.
 .RE
 .PP
 Since:
@@ -1022,6 +1060,11 @@ psl_suffix_wildcard_count (\fIconst \fR\fI\fBpsl_ctx_t\fR\fR\fI *psl\fR);
 This function returns number of public suffix wildcards maintained by
 \fIpsl\fR
 \&.
+.PP
+If the information is not available, the return value is \-1 (since 0\&.19)\&. This is the case with DAFSA blobs or if
+\fIpsl\fR
+is
+NULL\&.
 .sp
 .it 1 an-trap
 .nr an-no-space-flag 1
@@ -1054,7 +1097,7 @@ T}
 \fBReturns\fR
 .RS 4
 .PP
-Number of public suffix wildcards in PSL context\&.
+Number of public suffix wildcards in PSL context or \-1 if this information is not available\&.
 .RE
 .PP
 Since:
@@ -1423,11 +1466,9 @@ psl_str_to_utf8lower (\fIconst \fR\fI\fBchar\fR\fR\fI *str\fR,
 This helper function converts a string to UTF\-8 lowercase + NFKC representation\&. Lowercase + NFKC UTF\-8 is needed as input to the domain checking functions\&.
 .PP
 \fIlower\fR
-is set to
-NULL
-on error\&.
+stays unchanged on error\&.
 .PP
-The return value \*(Aqlower\*(Aq must be freed after usage\&.
+When returning PSL_SUCCESS, the return value \*(Aqlower\*(Aq must be freed after usage\&.
 .sp
 .it 1 an-trap
 .nr an-no-space-flag 1
@@ -1509,14 +1550,69 @@ to unicode PSL_ERR_TO_LOWER: Failed to convert unicode to lowercase PSL_ERR_TO_U
 .PP
 Since:
 0\&.4
+.SS "psl_free_string\ \&()"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+void
+psl_free_string (\fI\fBchar\fR\fR\fI *str\fR);
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+This function
+\fBfree()\fR\*(Aqs the memory allocated by
+\fBpsl_str_to_utf8lower()\fR
+when returning a lowercase string
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBParameters\fR
+.RS 4
+.TS
+expand tab(:);
+l l l.
+T{
+.PP
+str
+T}:T{
+.PP
+pointer to lowercase string returned by
+\fBpsl_str_to_utf8lower()\fR
+T}:T{
+\ \&
+T}
+.TE
+.sp 1
+.RE
+.PP
+Since:
+0\&.19
 .SH "TYPES AND VALUES"
+.SS "PSL_API"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+#  define PSL_API __attribute__ ((__visibility__("default")))
+.fi
+.if n \{\
+.RE
+.\}
 .SS "PSL_VERSION"
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
-#define PSL_VERSION "0\&.17\&.0"
+#define PSL_VERSION "0\&.21\&.1"
 .fi
 .if n \{\
 .RE
@@ -1538,7 +1634,7 @@ Since:
 .RS 4
 .\}
 .nf
-#define PSL_VERSION_MINOR 17
+#define PSL_VERSION_MINOR 21
 .fi
 .if n \{\
 .RE
@@ -1549,7 +1645,7 @@ Since:
 .RS 4
 .\}
 .nf
-#define PSL_VERSION_NUMBER 0x001100
+#define PSL_VERSION_NUMBER 0x001501
 .fi
 .if n \{\
 .RE
@@ -1560,7 +1656,7 @@ Since:
 .RS 4
 .\}
 .nf
-#define PSL_VERSION_PATCH 0
+#define PSL_VERSION_PATCH 1
 .fi
 .if n \{\
 .RE
@@ -1571,7 +1667,7 @@ Since:
 .RS 4
 .\}
 .nf
-#define PSL_TYPE_ICANN   (1<<0)
+#define PSL_TYPE_ICANN        (1<<0)
 .fi
 .if n \{\
 .RE
@@ -1582,7 +1678,18 @@ Since:
 .RS 4
 .\}
 .nf
-#define PSL_TYPE_PRIVATE (1<<1)
+#define PSL_TYPE_PRIVATE      (1<<1)
+.fi
+.if n \{\
+.RE
+.\}
+.SS "PSL_TYPE_NO_STAR_RULE"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+#define PSL_TYPE_NO_STAR_RULE (1<<2)
 .fi
 .if n \{\
 .RE
@@ -1593,7 +1700,7 @@ Since:
 .RS 4
 .\}
 .nf
-#define PSL_TYPE_ANY     (PSL_TYPE_ICANN | PSL_TYPE_PRIVATE)
+#define PSL_TYPE_ANY          (PSL_TYPE_ICANN | PSL_TYPE_PRIVATE)
 .fi
 .if n \{\
 .RE
@@ -1690,7 +1797,7 @@ T}
 .RS 4
 .\}
 .nf
-typedef struct _psl_ctx_st psl_ctx_t;
+typedef struct psl_ctx_st psl_ctx_t;
 .fi
 .if n \{\
 .RE
@@ -1705,4 +1812,9 @@ Public Suffix List
 Mozilla Public Suffix List
 .RS 4
 \%https://publicsuffix.org
+.RE
+.IP " 3." 4
+List
+.RS 4
+\%https://publicsuffix.org/list
 .RE
