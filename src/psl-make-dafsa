@@ -222,7 +222,6 @@ The bytes in the generated array has the following meaning:
 
 import sys
 import os.path
-import time
 import hashlib
 
 class InputError(Exception):
@@ -357,7 +356,7 @@ def join_suffixes(dafsa):
   nodemap = {frozenset((b'',)): None}
 
   def join(node):
-    """Returns a macthing node. A new node is created if no matching node
+    """Returns a matching node. A new node is created if no matching node
     exists. The graph is accessed in dfs order.
     """
     suffixes = frozenset(to_words(node))
@@ -448,7 +447,7 @@ def encode_prefix(label):
   """Encodes a node label as a list of bytes without a trailing high byte.
 
   This method encodes a node if there is exactly one child  and the
-  child follows immidiately after so that no jump is needed. This label
+  child follows immediately after so that no jump is needed. This label
   will then be a prefix to the label in the child node.
   """
   assert label
@@ -565,7 +564,7 @@ def parse_psl(infile, utf_mode, codecs):
       if section == 0:
         if b'===BEGIN ICANN DOMAINS===' in line:
           section = PSL_FLAG_ICANN
-        elif section == 0 and b'===BEGIN PRIVATE DOMAINS===' in line:
+        elif b'===BEGIN PRIVATE DOMAINS===' in line:
           section = PSL_FLAG_PRIVATE
       elif section == PSL_FLAG_ICANN and b'===END ICANN DOMAINS===' in line:
         section = 0
@@ -586,8 +585,6 @@ def parse_psl(infile, utf_mode, codecs):
       flags = PSL_FLAG_WILDCARD | PSL_FLAG_PLAIN | section
       line = line[2:]
     else:
-      if not b'.' in line:
-        continue # we do not need an explicit plain TLD rule, already covered by implicit '*' rule
       psl_nsuffixes += 1
       flags = PSL_FLAG_PLAIN | section
 
@@ -685,7 +682,7 @@ def main():
     psl_nexceptions = 0
     psl_nwildcards = 0
 
-    with open(sys.argv[-2], 'r') as infile, open(sys.argv[-1], 'wb') as outfile:
+    with open(sys.argv[-2], 'r', **codecs) as infile, open(sys.argv[-1], 'wb') as outfile:
       outfile.write(converter(parser(infile, utf_mode, codecs), utf_mode, codecs))
 
   return 0
