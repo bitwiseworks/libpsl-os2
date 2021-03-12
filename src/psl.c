@@ -1615,6 +1615,7 @@ static int isip(const char *hostname)
 #else
 	return inet_pton(AF_INET, hostname, &addr) || inet_pton(AF_INET6, hostname, &addr6);
 #endif
+#endif
 }
 
 /**
