@@ -128,16 +128,20 @@ static void test_psl(void)
 	/* Norwegian with lowercase oe */
 	test(psl, "www.\303\270yer.no", "www.\303\270yer.no");
 
+#ifndef __OS2__
 	/* Norwegian with lowercase oe, encoded as ISO-8859-15 */
 	test_iso(psl, "www.\370yer.no", "www.\303\270yer.no");
+#endif
 
 	/* Testing special code paths of psl_str_to_utf8lower() */
 	for (it = 254; it <= 257; it++) {
 		memset(lbuf, 'a', it);
 		lbuf[it] = 0;
 
+#ifndef __OS2__
 		lbuf[0] = '\370';
 		test_iso(psl, lbuf, NULL);
+#endif
 
 		lbuf[0] = '\303';
 		lbuf[1] = '\270';
